@@ -13,11 +13,13 @@ import com.ziv.reggie.service.DishService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -37,7 +39,7 @@ public class DishController {
     private DishService dishService;
 
     @Resource
-    private DishFlavorService dishFlavorService;
+    private RedisTemplate redisTemplate;
 
     @Resource
     private CategoryService categoryService;
@@ -51,6 +53,8 @@ public class DishController {
     @PostMapping
     public R<String> save(@RequestBody DishDto dishDto) {
         log.info(dishDto.toString());
+        String key = "dish_" + dishDto.getCategoryId() + "_1";
+        redisTemplate.delete(key);
         dishService.saveWithFlavor(dishDto);
         return R.success("新增菜品成功");
     }
@@ -110,6 +114,10 @@ public class DishController {
     @PutMapping
     public R<String> update(@RequestBody DishDto dishDto) {
         log.info(dishDto.toString());
+
+        String key = "dish_" + dishDto.getCategoryId() + "_1";
+        redisTemplate.delete(key);
+
         dishService.updateWithFlavor(dishDto);
         return R.success("修改菜品成功");
     }
